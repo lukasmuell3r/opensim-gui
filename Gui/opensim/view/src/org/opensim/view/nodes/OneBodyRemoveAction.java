@@ -1,6 +1,6 @@
 
 /* -------------------------------------------------------------------------- *
- * OpenSim: OneBodyRenameAction.java                                            *
+ * OpenSim: OneBodyRmoveAction.java                                            *
  * -------------------------------------------------------------------------- *
  * OpenSim is a toolkit for musculoskeletal modeling and simulation,          *
  * developed as an open source project by a worldwide community. Development  *
@@ -23,13 +23,16 @@
  * -------------------------------------------------------------------------- */
 package org.opensim.view.nodes;
 
+import java.io.IOException;
 import java.util.Vector;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
+import org.opensim.modeling.Body;
 import org.opensim.modeling.Joint;
 import org.opensim.modeling.Model;
 import org.opensim.modeling.OpenSimObject;
@@ -47,7 +50,7 @@ import org.opensim.modeling.PhysicalOffsetFrame;
 import org.opensim.modeling.SWIGTYPE_p_SimTK__Xml__Element;
 import org.opensim.view.NavigatorByTypeModel;
 
-public final class OneBodyRenameAction extends CallableSystemAction {
+public final class OneBodyRemoveAction extends CallableSystemAction {
    
    public boolean isEnabled() {
       Node[] selected = ExplorerTopComponent.findInstance().getExplorerManager().getSelectedNodes();
@@ -58,42 +61,30 @@ public final class OneBodyRenameAction extends CallableSystemAction {
       Node[] selected = ExplorerTopComponent.findInstance().getExplorerManager().getSelectedNodes();
       if (selected.length == 1){
          OpenSimObjectNode objectNode = (OpenSimObjectNode) selected[0];
-         //selected body : the body to change the name of and update its dependencies
-         OneBodyNode selectedBody = (OneBodyNode) objectNode;
-         String oldNameOfTheOneBody = selectedBody.getName();
-         if(selectedBody == null) return;
-         NotifyDescriptor.InputLine dlg =
-                 new NotifyDescriptor.InputLine("Model Name: ", "Rename ");
-         dlg.setInputText(objectNode.getOpenSimObject().getName());
-         if(DialogDisplayer.getDefault().notify(dlg)==NotifyDescriptor.OK_OPTION){
-             String newName = dlg.getInputText();
-             if (OpenSimDB.getInstance().validateName(newName, true)){
-                 objectNode.getOpenSimObject().setName(newName);
-                 objectNode.setName(newName);  // Force navigator window update
-                 // Create event to tell everyone else
-                 Vector<OpenSimObject> objs = new Vector<OpenSimObject>(1);
-                 objs.add(objectNode.getOpenSimObject());
-                 ObjectsRenamedEvent evnt = new ObjectsRenamedEvent(this, null, objs);
-                 OpenSimDB.getInstance().setChanged();
-                 OpenSimDB.getInstance().notifyObservers(evnt);
-                 // The following is specific to renaming a model since
-                 // other windows may display currentModel's name
-                 // A more generic scheme using events should be used.
-                 if (objectNode instanceof OneBodyNode) {
-                     //getting the model to alter the model naming in the joints
-                    Model dModel = OpenSimDB.getInstance().getCurrentModel();
-                    // Mark the model as dirty to apply the changes to the sub elements
-                    SingleModelGuiElements guiElem = OpenSimDB.getInstance().getModelGuiElements(dModel);
-                    guiElem.setUnsavedChangesFlag(true);
-                    //updateOneBodyDependencies(selectedBody, dModel, oldNameOfTheOneBody,newName);
-                 }
-                 objectNode.refreshNode();
-             } else
-                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Provided name "+newName+" is not valid"));
-         }
+         //selected body : the body to ewmovw with its dependencies
+         OneBodyNode selectedBodyNode = (OneBodyNode) objectNode;
+         if(selectedBodyNode == null) return;
+          System.out.println("the type is "+ objectNode.getOpenSimObject());
+          try {
+              OpenSimObject osObj =  objectNode.getOpenSimObject();
+              objectNode.destroy();
+              //osObj.updateFromXMLNode(SWIGTYPE_p_SimTK__, 0);
+              objectNode.getOpenSimObject().delete();
+          } catch (IOException ex) {
+              Exceptions.printStackTrace(ex);
+              System.out.println("something wrong with the delete of the object");
+          }
+        
+        //body.getModel().
+        OpenSimDB.getInstance().setChanged();
+        //OpenSimDB.getInstance().notifyObservers(evnt);
+        // The following is specific to renaming a model since
+        // other windows may display currentModel's name
+        // A more generic scheme using events should be used.
+
     
       } else { // Should never happen
-         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Rename of multiple objects is not supported."));
+         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Deleting of multiple objects is not supported."));
       }
    }
    //to update the naming of the body after the renaming
@@ -117,7 +108,7 @@ public final class OneBodyRenameAction extends CallableSystemAction {
                         System.out.println("this frame is altered by the renaming "+offsetFrame.getName()+" for the old name"+oldBodyName
                         +"and this is the property "+offsetFrame.getPropertyByName("socket_parent"));
                         //offsetFrame.updPropertyByName("socket_parent").setValueAsObject(bodyNode.getOpenSimObject());
-                        offsetFrame.updateXMLNode(new SWIGTYPE_p_SimTK__Xml__Element());                                
+                        //offsetFrame.updateXMLNode(null);                                
                         //offsetFrame.updPropertyByName("").
                      }
 
@@ -136,7 +127,7 @@ public final class OneBodyRenameAction extends CallableSystemAction {
    
    @Override
    public String getName() {
-      return NbBundle.getMessage(ModelRenameAction.class, "CTL_ObjectRenameAction");
+       return  "Remove..";//NbBundle.getMessage(ModelRenameAction.class, "CTL_ObjectRenameAction");
    }
    
    @Override

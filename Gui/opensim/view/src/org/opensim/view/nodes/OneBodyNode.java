@@ -128,7 +128,7 @@ public class OneBodyNode extends OneFrameNode{
         
         List<Action> actions = java.util.Arrays.asList(superActions);
         // Create new Array of proper size
-        Action[] retActions = new Action[actions.size()+2];
+        Action[] retActions = new Action[actions.size()+3];
         actions.toArray(retActions);
         try {
             // append new command to the end of the list of actions
@@ -136,6 +136,8 @@ public class OneBodyNode extends OneFrameNode{
                      (Class)Class.forName("org.opensim.view.nodes.BodyToggleCOMAction"), true);
             retActions[actions.size()+1] = (OneBodyRenameAction) OneBodyRenameAction.findObject(
             (Class)Class.forName("org.opensim.view.nodes.OneBodyRenameAction"), true);
+            retActions[actions.size()+2] = (OneBodyRemoveAction) OneBodyRemoveAction.findObject(
+            (Class)Class.forName("org.opensim.view.nodes.OneBodyRemoveAction"), true);
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
