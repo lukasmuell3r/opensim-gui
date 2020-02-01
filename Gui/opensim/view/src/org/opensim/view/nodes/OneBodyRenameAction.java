@@ -46,6 +46,7 @@ import org.opensim.modeling.PhysicalFrame;
 import org.opensim.modeling.PhysicalOffsetFrame;
 import org.opensim.modeling.SWIGTYPE_p_SimTK__Xml__Element;
 import org.opensim.view.NavigatorByTypeModel;
+import org.opensim.view.OpenSimJavaBasedXMLDocument;
 
 public final class OneBodyRenameAction extends CallableSystemAction {
    
@@ -85,6 +86,8 @@ public final class OneBodyRenameAction extends CallableSystemAction {
                     // Mark the model as dirty to apply the changes to the sub elements
                     SingleModelGuiElements guiElem = OpenSimDB.getInstance().getModelGuiElements(dModel);
                     guiElem.setUnsavedChangesFlag(true);
+                     OpenSimJavaBasedXMLDocument xmlDocument = new OpenSimJavaBasedXMLDocument(dModel.getInputFileName());
+                     //dModel.getIN
                     //updateOneBodyDependencies(selectedBody, dModel, oldNameOfTheOneBody,newName);
                  }
                  objectNode.refreshNode();
@@ -117,7 +120,7 @@ public final class OneBodyRenameAction extends CallableSystemAction {
                         System.out.println("this frame is altered by the renaming "+offsetFrame.getName()+" for the old name"+oldBodyName
                         +"and this is the property "+offsetFrame.getPropertyByName("socket_parent"));
                         //offsetFrame.updPropertyByName("socket_parent").setValueAsObject(bodyNode.getOpenSimObject());
-                        offsetFrame.updateXMLNode(new SWIGTYPE_p_SimTK__Xml__Element());                                
+                        //offsetFrame                            
                         //offsetFrame.updPropertyByName("").
                      }
 

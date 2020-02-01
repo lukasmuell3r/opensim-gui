@@ -68,6 +68,7 @@ public final class OneBodyRemoveAction extends CallableSystemAction {
           try {
               OpenSimObject osObj =  objectNode.getOpenSimObject();
               objectNode.destroy();
+              
               //osObj.updateFromXMLNode(SWIGTYPE_p_SimTK__, 0);
               objectNode.getOpenSimObject().delete();
           } catch (IOException ex) {
