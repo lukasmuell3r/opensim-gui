@@ -33,10 +33,12 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
+import org.openide.util.Exceptions;
 import org.opensim.utils.ErrorDialog;
 
 import org.python.core.Py;
 import org.python.core.PyException;
+import org.python.jline.console.ConsoleReader;
 import org.python.util.InteractiveConsole;
 import org.python.util.JLineConsole;
 
@@ -71,6 +73,7 @@ public class JConsole extends JTextArea implements KeyListener {
      * The script engine and scope we're using
      */
     private InteractiveConsole interp;
+    private JLineConsole interpConsole;
     /**
      * The allowed variables and stuff to use
      */
@@ -90,6 +93,25 @@ public class JConsole extends JTextArea implements KeyListener {
      */
     public JConsole() {
         
+        //System.out.println("System encoding is"+System.getProperty("file.encoding"));
+        //System.out.println("Jython encoding is"+System.getProperty("python.console.encoding"));
+        //System.setProperty("python.console.encoding", "Cp1252");
+        //System.setProperty("", "Cp1252");
+        //System.out.println("System encoding is"+System.getProperty("file.encoding"));
+        
+        //ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "chcp", "1252").inheritIO();
+        //Process p;
+        //try {
+        //    p = pb.start();
+        //    p.waitFor();
+        //} catch (IOException ex) {
+        //    Exceptions.printStackTrace(ex);
+        //} catch (InterruptedException ex) {
+        //    Exceptions.printStackTrace(ex);
+        //}
+        
+        
+        System.out.println("Jython encoding is"+System.getProperty("python.console.encoding"));
         // create streams that will link with this
         in = new ConsoleInputStream(this);
         // System.setIn(in);
@@ -101,14 +123,26 @@ public class JConsole extends JTextArea implements KeyListener {
         // setup the script engine
 //        interp = new InteractiveInterpreter();
 
-        // no postProps, registry values used 
-        JLineConsole.initialize(System.getProperties(), null, new String[0]);
-
-        interp = new JLineConsole();
+        // no postProps, registry values used
+        //JLineConsole.initialize(System.getProperties(), null, new String[0]);
+        InteractiveConsole.initialize(System.getProperties(),null, new String[0]);
+        interp =new InteractiveConsole();
+        interpConsole = new  JLineConsole("UTF-8");
+        try {
+            interpConsole.reader = new ConsoleReader();
+            //interpConsole.install();
+            //trying to fix the issue with the latest version 2.7.1 of jython
+            //interp = new InteractiveConsole();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 	
         // important line, set JLineConsole to internal python variable to be able to 
         // acces console from python interface
-        interp.getSystemState().__setattr__("_jy_interpreter", Py.java2py(interp));
+        //interp.getSystemState().__setattr__("_jy_interpreter", Py.java2py(interp));
+        //interp.getSystemState().__setattr__("_jy_main", Py.java2py(this));
+        //the new setup for 2.7 version
+        interp.getSystemState().__setattr__("_jy_console", Py.java2py(interpConsole));
         interp.getSystemState().__setattr__("_jy_main", Py.java2py(this));
 	
         // this instance - in order to call interrupt on correct thread
